@@ -25,7 +25,7 @@ export default async function Home() {
       <div className="mainContainer">
       {characters.map((char: character) => (
           <div className="cardContent" key={char.id}>
-          <Image className="img" src={`${char.thumbnail.path}.${char.thumbnail.extension}`} alt={char.name}/>
+          <Image className="img" width={300} height={300} src={`${char.thumbnail.path}.${char.thumbnail.extension}`} alt={char.name}/>
             <div className='description'>
                 <h2>{char.name}</h2>
                 <div className='cardBotton'>

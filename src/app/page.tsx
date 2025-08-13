@@ -1,13 +1,48 @@
-"use server"
+"use client"
 
-import { character } from "@/types/character";
-import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from 'react';
 
-export default async function Home() {
-  const data = await fetch(`${process.env.LINK}characters?&orderBy=modified&limit=100&${process.env.KEY}`)
-  const response = await data.json();
-  const characters = response.data.results
+export default function Home() {
+  const [characters, setCharacters] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetch('/api/characters')
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+          });
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data && data.data && data.data.results) {
+          setCharacters(data.data.results);
+        } else {
+          throw new Error('Formato de dados da API inesperado.');
+        }
+      })
+      .catch(error => {
+        setError(error.message);
+        console.error("Erro na requisição:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  if (isLoading) {
+    return <div>Carregando personagens...</div>;
+  }
+
+  if (error) {
+    return <div>Ocorreu um erro: {error}</div>;
+  }
+
   return (
     <div>
       <header>
@@ -23,9 +58,9 @@ export default async function Home() {
         </nav>
       </header>
       <div className="mainContainer">
-      {characters.map((char: character) => (
+      {/*characters.map((char: character) => (
           <div className="cardContent" key={char.id}>
-          <Image className="img" width={300} height={300} src={`${char.thumbnail.path}.${char.thumbnail.extension}`} alt={char.name}/>
+          <img className="img" width={300} height={300} src={`${char.thumbnail.path}.${char.thumbnail.extension}`} alt={char.name}/>
             <div className='description'>
                 <h2>{char.name}</h2>
                 <div className='cardBotton'>
@@ -46,7 +81,7 @@ export default async function Home() {
                 </div>
             </div>
           </div>
-        ))
+        ))*/
       }
       </div>
     </div>

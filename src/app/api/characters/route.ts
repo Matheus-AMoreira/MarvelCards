@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import md5 from 'js-md5';
 
 export async function GET() {
   const privateKey = process.env.MARVEL_API_PRIVATE_KEY;
   const publicKey = process.env.MARVEL_API_PUBLIC_KEY;
   const apiBaseURL = process.env.MARVEL_API_BASE_URL;
+  const md5 = require('js-md5'); 
 
   try {
     if (!privateKey || !publicKey || !apiBaseURL) {
@@ -17,12 +17,13 @@ export async function GET() {
     const ts = Date.now();
     const hash = md5(ts + privateKey + publicKey);
     const params = new URLSearchParams({
-      ts: ts,
+      ts: ts.toString(),
       apikey: publicKey,
       hash: hash,
     });
 
     const url = `${apiBaseURL}/characters?${params}`;
+    console.log(url)
 
     const response = await fetch(url);
     if (!response.ok) {
@@ -36,9 +37,14 @@ export async function GET() {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    const typedError = error as { message: string }; 
+    
     return new NextResponse(
-      JSON.stringify({ error: error.message }),
-      { status: 500 }
+        JSON.stringify({ error: typedError.message }),
+        { 
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        }
     );
   }
 }

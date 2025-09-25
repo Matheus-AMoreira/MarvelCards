@@ -72,10 +72,10 @@ export default function Home() {
             <Card 
               key={id} 
               thumbnail={fullThumbnailUrl}
-            name={name}
-            comics={comics.available} 
-            series={series.available} 
-            stories={stories.available}
+              name={name}
+              comics={comics.available} 
+              series={series.available} 
+              stories={stories.available}
             />
         );
       })}

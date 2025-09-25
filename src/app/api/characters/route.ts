@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto'; 
 
 export async function GET() {
   const privateKey = process.env.MARVEL_API_PRIVATE_KEY;
   const publicKey = process.env.MARVEL_API_PUBLIC_KEY;
   const apiBaseURL = process.env.MARVEL_API_BASE_URL;
-  const md5 = require('js-md5'); 
 
   try {
     if (!privateKey || !publicKey || !apiBaseURL) {
@@ -15,15 +15,17 @@ export async function GET() {
     }
 
     const ts = Date.now();
-    const hash = md5(ts + privateKey + publicKey);
+    const dataToHash = ts + privateKey + publicKey;
+
+    const hash = crypto.createHash('md5').update(dataToHash).digest('hex');
+
     const params = new URLSearchParams({
       ts: ts.toString(),
       apikey: publicKey,
       hash: hash,
     });
 
-    const url = `${apiBaseURL}/characters?${params}`;
-    console.log(url)
+    const url = `${apiBaseURL}/v1/public/characters?${params}`;
 
     const response = await fetch(url);
     if (!response.ok) {

@@ -1,5 +1,3 @@
-import { character } from "@/types/character";
-
 interface CardProps {
     thumbnail: string;
     name: string;

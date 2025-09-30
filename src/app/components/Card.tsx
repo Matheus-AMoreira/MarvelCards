@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 interface CardProps {
     thumbnail: string;
     name: string;
@@ -9,7 +11,7 @@ interface CardProps {
 export default function Card({ thumbnail, name, comics, series, stories }: CardProps){
     return (
         <div className="cardContent">
-          <img className="w-[320px] h-[300px]" src={thumbnail} alt={name}/>
+          <Image className="w-[320px] h-[300px]" width={320} height={300}src={thumbnail} alt={name}/>
             <div className='description'>
                 <h2>{name}</h2>
                 <div className='cardBotton'>

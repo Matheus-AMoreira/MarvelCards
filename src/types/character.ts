@@ -1,54 +1,62 @@
-export interface character {
-    id: number;
-    name: string;
-    description: string;
-    modified: string;
-    thumbnail: Thumbnail;
+interface Character {
+  id: number;
+  name: string;
+  description: string;
+  modified: string;
+  thumbnail: Image;
+  resourceURI: string;
+  comics: ComicList;
+  series: SeriesList;
+  stories: StoryList;
+  events: EventList;
+  urls: Url[];
+}
+
+interface ComicList {
+  available: number;
+  collectionURI: string;
+  items: ComicSummary[];
+  returned: number;
+}
+
+interface ComicSummary {
+  resourceURI: string;
+  name: string;
+}
+
+interface SeriesList {
+    available: number;
+    collectionURI: string;
+    items: SeriesSummary[];
+    returned: number;
+}
+
+interface SeriesSummary {
     resourceURI: string;
-    comics: Comics;
-    series: Comics;
-    stories: Stories;
-    events: Comics;
-    urls: Url[];
-  }
-  
-interface Url {
-  type: string;
-  url: string;
+    name: string;
 }
 
-interface Stories {
-  available: number;
-  collectionURI: string;
-  items: Item2[];
-  returned: number;
+interface StoryList {
+    available: number;
+    collectionURI: string;
+    items: StorySummary[];
+    returned: number;
 }
 
-export interface Item2 {
-  resourceURI: string;
-  name: string;
-  type: string;
+interface StorySummary {
+    resourceURI: string;
+    name: string;
+    type: string;
 }
 
-interface Comics {
-  available: number;
-  collectionURI: string;
-  items: Item[];
-  returned: number;
+interface EventList {
+    available: number;
+    collectionURI: string;
+    items: EventSummary[];
+    returned: number;
 }
 
-export interface Item {
-  resourceURI: string;
-  name: string;
-}
-
-interface Thumbnail {
-  path: string;
-  extension: string;
-}
-  
-export interface fav {
-  id: number,
-  name: string,
-  img: string
+interface EventSummary {
+    resourceURI: string;
+    name: string;
 }

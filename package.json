@@ -12,7 +12,8 @@
     "js-md5": "^0.8.3",
     "next": "^15.4.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "redis": "^5.8.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -22,6 +23,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^15.4.2",
+    "prisma": "^6.16.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

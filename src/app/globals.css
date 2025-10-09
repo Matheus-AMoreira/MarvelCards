@@ -1,95 +1,16 @@
 @import "tailwindcss";
 
-:root {
-    --button-red: #e62429;
-    --text-color: #000000;
-    --text-color-black: #202020;
-    --navbar-color-lightblack: #202020;
-    --navbar-color-black: #151515;
-    --background-color: #fff;
+@theme {
+  --button-red: #e62429;
+  --button-dark-red: #ca2020;
+  --text-color: #000000;
+  --text-color-black: #202020;
+  --navbar-color-lightblack: #202020;
+  --navbar-color-black: #151515;
+  --background-color: #fff;
 }
 
-html, body {
-  background-color: var(--background-color);
-}
-
-.mainContainer {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    justify-items: center;
-    padding: 1rem;
-    gap: 2rem;
-}
-
-.cardContent {
-    display: flex;
-    flex-direction: column;
-    width: 20rem;
-    height: 32rem;
-    border-radius: 0px 0px 20px 20px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    background-color: var(--navbar-color-lightblack);
-    transition-property: background-color;
-    transition-duration: 0.6s;
-    transition-timing-function: ease
-}
-
-.cardContent:hover {
-    background: red;
-    transform: scale(1.06);
-}
-
-.description {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.description h2 {
-    text-decoration: inherit;
-    color: #fff;
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 2rem;
-    width: 100%;
-}
-
-.buttonArea h2{
-    line-height: 0;
-}
-
-.cardBotton {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    width: 100%;
-    margin: 0 auto;
-}
-
-.separtion {
-    text-align: center;
-    color: white;
-}
-
-.separtion p{
-    font-size: 1.6rem;
-}
-
-@media (max-width: 1024px) {
-  .mainContainer {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .mainContainer {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .mainContainer {
-    grid-template-columns: repeat(1, 1fr);
-  }
+.marvel-button{
+    @apply m-px font-bold text-white flex justify-center px-4 text-lg
+    uppercase -skew-x-12 bg-(--button-red) hover:bg-(--button-dark-red);
 }

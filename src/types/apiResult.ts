@@ -13,5 +13,5 @@ interface DataContainer<T> {
   limit: number;
   total: number;
   count: number;
-  results: Character[] | Comic[] | Creator[] | Event[] | Series[] | Story[];
+  results: T[];
 }

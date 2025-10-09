@@ -1,26 +1,42 @@
-"use client";
+"use client"
+
+import Link from 'next/link';
+import LimitSelector from '@/app/components/LimitSelector';
 
 interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
+  totalChars: number;
+  limit: number;
+  offset: number;
+  searchQuery?: string;
 }
 
-export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+export default function Pagination({ totalChars, limit, offset, searchQuery }: PaginationProps) {
+  const currentPage = Math.floor(offset / limit) + 1;
+  const totalPages = Math.ceil(totalChars / limit);
+
+  const createPageUrl = (page: number) => {
+    const newOffset = (page - 1) * limit;
+    const params = new URLSearchParams();
+    params.set('limit', limit.toString());
+    params.set('offset', newOffset.toString());
+
+    if (searchQuery) {
+      params.set('query', searchQuery);
+    }
+    
+    return `/?${params.toString()}`;
+  };
 
   const getPageNumbers = () => {
     const pageNumbers = [];
-    const maxPagesToShow = 5;
+    const maxPagesToShow = 10;
     const halfWindow = Math.floor(maxPagesToShow / 2);
 
     let startPage = Math.max(1, currentPage - halfWindow);
-    let endPage = Math.min(totalPages, currentPage + halfWindow);
+    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
 
-    if (currentPage - halfWindow <= 0) {
-      endPage = Math.min(totalPages, maxPagesToShow);
-    }
-    if (currentPage + halfWindow > totalPages) {
-      startPage = Math.max(1, totalPages - maxPagesToShow + 1);
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
 
     for (let i = startPage; i <= endPage; i++) {
@@ -31,37 +47,61 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
 
   const pageNumbers = getPageNumbers();
 
-  if (totalPages <= 1) return null;
+  const getLinkClassName = (isActive: boolean, isNavButton = false) => {
+    const baseClasses = 'font-bold py-2 px-4 rounded';
+    if (isActive) {
+      return `${baseClasses} bg-red-600 text-white`;
+    }
+    if (isNavButton) {
+        return `${baseClasses} bg-gray-700 hover:bg-gray-600 text-white`;
+    }
+    return `${baseClasses} bg-gray-300 hover:bg-gray-400 text-black`;
+  };
+
+  const disabledClasses = "opacity-50 cursor-not-allowed pointer-events-none";
 
   return (
-    <div className="flex flex-col items-center my-6 space-y-2">
+    <div className="flex flex-wrap flex-col items-center my-4">
       <span className="text-sm text-gray-400">
         Página {currentPage} de {totalPages}
       </span>
-      <div className="flex justify-center items-center space-x-2">
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-        >Anterior</button>
+      <div className="flex flex-col justify-center items-center gap-1 
+                xl:flex-row xl:justify-center xl:items-center xl:gap-4">
+        <LimitSelector limit={limit} searchQuery={searchQuery} />
 
-        {pageNumbers.map((number) => (
-          <button
-            key={number}
-            onClick={() => onPageChange(number)}
-            className={`font-bold py-2 px-4 rounded ${
-              currentPage === number
-                ? 'bg-red-600 text-white'
-                : 'bg-gray-300 hover:bg-gray-400 text-black'
-            }`}
-          >{number}</button>
-        ))}
+        {totalPages > 1 && (
+          <>
+            <div className="flex flex-wrap justify-center items-center gap-1">
+              <Link href={createPageUrl(1)} className={`${getLinkClassName(false, true)} ${currentPage === 1 ? disabledClasses : ''}`}>
+                Início
+              </Link>
+              <Link href={createPageUrl(currentPage - 1)} className={`${getLinkClassName(false, true)} ${currentPage === 1 ? disabledClasses : ''}`}>
+                Anterior
+              </Link>
+            </div>
 
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-        >Próxima</button>
+            <div className="flex flex-wrap justify-center items-center place-content-evenly gap-4">
+              {pageNumbers.map((number) => (
+                <Link
+                  key={number}
+                  href={createPageUrl(number)}
+                  className={getLinkClassName(currentPage === number)}
+                >
+                  {number}
+                </Link>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap justify-center items-center gap-1">
+              <Link href={createPageUrl(currentPage + 1)} className={`${getLinkClassName(false, true)} ${currentPage === totalPages ? disabledClasses : ''}`}>
+                Próxima
+              </Link>
+              <Link href={createPageUrl(totalPages)} className={`${getLinkClassName(false, true)} ${currentPage === totalPages ? disabledClasses : ''}`}>
+                Fim
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,12 @@
+import "./globals.css";
+
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import "./globals.css";
+
+import SupabaseProvider from "@app/context/SupabaseProvider";
+import NavBar from "@app/components/NavBar";
+import { Suspense } from "react";
+import NavBarSkeleton from "@app/components/NavBarSkeleton";
 
 const roboto = Roboto({
   subsets: ['latin'],
@@ -20,7 +26,12 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body className={`${roboto.variable}`}>
-        {children}
+        <SupabaseProvider>
+          <Suspense fallback={<NavBarSkeleton />}>
+            <NavBar />
+          </Suspense>
+          {children}
+        </SupabaseProvider>
       </body>
     </html>
   );

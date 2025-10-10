@@ -11,6 +11,6 @@
 }
 
 .marvel-button{
-    @apply m-px font-bold text-white flex justify-center px-4 text-lg
+    @apply m-px font-bold text-white px-4 text-lg
     uppercase -skew-x-12 bg-(--button-red) hover:bg-(--button-dark-red);
 }

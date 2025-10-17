@@ -8,6 +8,7 @@ export default function SignUp() {
   const { supabase } = useSupabase();
   const router = useRouter();
   
+  const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,6 +22,11 @@ export default function SignUp() {
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
+      options:{
+        data: {
+          username: userName,
+        }
+      }
     });
 
     if (error) {
@@ -29,6 +35,7 @@ export default function SignUp() {
     } else {
       setMessage('Cadastro realizado! Por favor, verifique seu e-mail para confirmar sua conta.');
       
+      setUserName('');
       setEmail('');
       setPassword('');
     }
@@ -38,6 +45,14 @@ export default function SignUp() {
     <>
       <h1 className="text-2xl font-bold mb-4">Sing Up</h1>
       <form onSubmit={handleSignUp} className="flex flex-col gap-4 w-80">
+        <input
+          type="username"
+          placeholder="Nome de usuário"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          required
+          className="p-2 border rounded"
+        />
         <input
           type="email"
           placeholder="Seu e-mail"

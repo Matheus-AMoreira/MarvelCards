@@ -40,7 +40,7 @@ export default function SupabaseProvider({ children }: { children: React.ReactNo
   );
 }
 
-// Hook customizado para facilitar o uso do contexto
+// Hook
 export const useSupabase = () => {
   const context = useContext(SupabaseContext);
   if (context === null) {

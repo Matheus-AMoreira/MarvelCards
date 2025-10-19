@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Usuario {
+  id                 String    @id @db.Uuid
+  username_display   String
+  username_canonical String
+  tag                String    @db.Char(4)
+  perfil_publico     Boolean   @default(false)
+  criado_em          DateTime  @default(now())
+  
+  personagens_favoritos UsuarioPersonagemFavorito[]
+
+  @@unique([username_canonical, tag])
+}
+
+model Personagem {
+  id            Int      @id @default(autoincrement())
+  api_id        Int      @unique
+  nome          String
+  thumbnail_url String
+
+  favoritado_por UsuarioPersonagemFavorito[]
+}
+
+model UsuarioPersonagemFavorito {
+  usuario    Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  usuario_id String  @db.Uuid
+
+  personagem    Personagem @relation(fields: [personagem_id], references: [id], onDelete: Cascade)
+  personagem_id Int
+
+  adicionado_em DateTime @default(now())
+
+  @@id([usuario_id, personagem_id])
+}

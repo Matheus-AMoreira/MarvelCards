@@ -1,4 +1,4 @@
-import { getCharactersFromMarvel } from "@app/lib/ApiFetch";
+import { getCharactersFromMarvel } from "@app/lib/apifetch/ApiFetch";
 
 import Footer from "@app/components/Footer";
 import Pagination from "@app/components/Pagination";
@@ -52,11 +52,12 @@ export default async function CharacterGrid({ searchParams } : { searchParams:an
     );
   }
 
-  // Renderiza os resultados
   return (
     <>
       <div className="flex flex-wrap justify-center gap-[2rem] p-[1rem]">
-        {charactersData.data.results.map((char) => <Card key={char.id} char={char}/>)}
+        {charactersData.data.results.map((char) => 
+          <Card key={char.id} char={char}/>)
+        }
       </div>
       <Pagination 
         totalChars={charactersData.data.total} 

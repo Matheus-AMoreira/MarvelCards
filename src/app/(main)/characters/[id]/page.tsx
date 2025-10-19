@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import { getCharacterById } from "@app/lib/ApiFetch";
+import { getCharacterById } from "@app/lib/apifetch/ApiFetch";
 import CharButtons from '@app/components/characters/[id]/CharButtons';
 
 export default async function CharacterDetailPage({ params } : { params:Promise<any> }) {
@@ -20,7 +20,7 @@ export default async function CharacterDetailPage({ params } : { params:Promise<
             <h1 className="text-4xl md:text-5xl font-extrabold text-[#202020] tracking-tight">
               {char.name}
             </h1>
-            <CharButtons name={char.name} id={char.id}/>
+            <CharButtons name={char.name} id={char.id} thumbnail_url={`${char.thumbnail.path}.${char.thumbnail.extension}`}/>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

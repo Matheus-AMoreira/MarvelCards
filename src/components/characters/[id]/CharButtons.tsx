@@ -1,20 +1,14 @@
 "use client"
 
-import { useSupabase } from "@app/context/SupabaseProvider";
 import { addCharacterToFavorites } from "@app/lib/serveractions/favoriteActions";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function CharButtons({id, name, thumbnail_url}: { id:number, name:string, thumbnail_url:string}){
     const router = useRouter();
-    const { session }  = useSupabase();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleFavorite = async () => {
-        if (!session) {
-            alert("Você precisa estar logado para favoritar!");
-            return;
-        }
 
         setIsLoading(true);
 
@@ -22,7 +16,7 @@ export default function CharButtons({id, name, thumbnail_url}: { id:number, name
             api_id: id,
             nome: name,
             thumbnail_url: thumbnail_url,
-        }, session);
+        }, );
 
         if (result.success) {
             alert(`Personagem ${name} adicionado aos favoritos!`);

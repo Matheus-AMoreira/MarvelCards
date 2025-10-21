@@ -3,7 +3,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 
-import SupabaseProvider from "@app/context/SupabaseProvider";
 import NavBar from "@app/components/NavBar";
 import { Suspense } from "react";
 import NavBarSkeleton from "@app/components/NavBarSkeleton";
@@ -26,12 +25,10 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body className={`${roboto.variable}`}>
-        <SupabaseProvider>
           <Suspense fallback={<NavBarSkeleton />}>
             <NavBar />
           </Suspense>
           {children}
-        </SupabaseProvider>
       </body>
     </html>
   );

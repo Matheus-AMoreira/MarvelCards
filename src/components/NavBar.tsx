@@ -1,56 +1,77 @@
 "use client"
 
-import { useSupabase } from "@app/context/SupabaseProvider";
+import { createClient } from "@app/utils/supabase/client";
+import { User } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 
 export default function NavBar(){
-    const { session } = useSupabase();
-
-    const { supabase } = useSupabase();
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
-
+    const [user, setUser] = useState<User | null>(null)
     const [searchTerm, setSearchTerm] = useState(searchParams.get('query') || '');
 
+    // useEffect para gerenciar busca
     useEffect(() => {
-        const queryFromUrl = searchParams.get('query') || '';
-        setSearchTerm(queryFromUrl);
-    }, [searchParams]);
+        setSearchTerm(searchParams.get('query') || '');
+    }, [searchParams, pathname]);
 
     useEffect(() => {
         const debounceTimer = setTimeout(() => {
-            const currentQuery = searchParams.get('query') || '';
-
-            if (searchTerm === '' && currentQuery === '') {
-                return; 
-            }
-            const params = new URLSearchParams(searchParams);
-            if (searchTerm) {
-                params.set('query', searchTerm);
-            } else {
-                params.delete('query');
-            }
-
-            const searchUrl = `/characters?${params.toString()}`;
-
-            if (pathname === '/characters') {
-                router.replace(searchUrl);
-            } else {
-                router.push(searchUrl);
-            }
-
+        const currentQuery = searchParams.get('query') || '';
+        if (searchTerm === currentQuery) {
+        return;
+        }
+        const params = new URLSearchParams(searchParams);
+        if (searchTerm) {
+        params.set('query', searchTerm);
+        } else {
+        params.delete('query');
+        }
+        const searchUrl = `/characters?${params.toString()}`;
+        if (pathname === '/characters') {
+        router.replace(searchUrl, { scroll: false });
+        } else {
+        router.push(searchUrl, { scroll: false });
+        }
         }, 1000);
-
         return () => clearTimeout(debounceTimer);
-    }, [searchTerm, router, searchParams, pathname]);
+    }, [searchTerm, searchParams, pathname, router]);
+
+    // useEffect para gerenciar autenticação
+    useEffect(() => {
+        const supabase = createClient();
+        const justLoggedIn = searchParams.get('justLoggedIn');
+
+        const loadSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setUser(session?.user ?? null);
+        };
+
+        loadSession();
+
+        if (justLoggedIn) {
+            loadSession();
+        }
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            (event, session) => {
+                setUser(session?.user ?? null);
+            }
+        );
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [searchParams]);
 
     const handleLogout = async () => {
-        router.push('/characters');
-        await supabase.auth.signOut();
+        const supabase = await createClient()
+        supabase.auth.signOut();
+        router.push('/');
     };
     
     return (
@@ -70,25 +91,30 @@ export default function NavBar(){
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <div className='flex'>
-                    {session ? (
-                        <>
-                            <Link href='/favorites' className='marvel-button'>
-                                Meus Favoritos
-                            </Link>
-                            <button onClick={handleLogout} className='marvel-button'>
-                                Logout
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link href='/auth/login' className='marvel-button'>
-                                Login
-                            </Link>
-                            <Link href='/auth/signup' className='marvel-button'>
-                                SingUp
-                            </Link>
-                        </>
-                    )}
+                    {user ? (
+                            <>
+                                <p className="m-px font-bold text-white px-4 text-lg
+                                uppercase">
+                                    {user.user_metadata.username}
+                                </p>
+                                <Link href='/favorites' className='marvel-button'>
+                                    Meus Favoritos
+                                </Link>
+                                <button onClick={handleLogout} className='marvel-button'>
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link href='/auth/login' className='marvel-button'>
+                                    Login
+                                </Link>
+                                <Link href='/auth/signup' className='marvel-button'>
+                                    SingUp
+                                </Link>
+                            </>
+                        )
+                    }
                 </div>
             </nav>
         </header>

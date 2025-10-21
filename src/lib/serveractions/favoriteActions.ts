@@ -2,40 +2,47 @@
 
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@app/lib/prisma/prisma';
-import { Session } from '@supabase/supabase-js';
+import { createClient } from '../../utils/supabase/server';
+import { type Personagem } from '@app/components/characters/FavoritesList';
 
 type ActionResult = {
   success: boolean;
   error?: string;
 };
 
-export async function findUserFavorites(session:Session | null) {
-  let data = [];
+type FindFavoritesResult = 
+  | { success: true; data: Personagem[] }
+  | { success: false; error: string };
 
-  if (!session) {
+export async function findUserFavorites() : Promise<FindFavoritesResult> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.getUser()
+
+  if (error) {
     return { success: false, error: "Não autorizado." };
   }
 
-  try{
-    const result = await prisma.usuarioPersonagemFavorito.findMany({
+  try {
+    const favoritesRelation = await prisma.usuarioPersonagemFavorito.findMany({
     where: {
-        usuario_id: session.user.id,
-      },
-      include: {
-        personagem: true,
-      },
-      orderBy: {
-        adicionado_em: 'desc',
-      },
-    })
+      usuario_id: data.user.id,
+    },
+    include: {
+      personagem: true,
+    },
+    orderBy: {
+      adicionado_em: 'desc',
+    },
+  });
 
-    data = result;
+    const favoriteCharacters = favoritesRelation.map(fav => fav.personagem);
+    
+    return { success: true, data: favoriteCharacters };
 
-  } catch (erro:any) {
-      return { success: false, error: "Ocorreu um erro ao buscar os personagens!" }
+  } catch (error) {
+    console.error("Erro ao buscar favoritos:", error);
+    return { success: false, error: "Ocorreu um erro no servidor ao buscar os personagens favoritos." };
   }
-
-  return { success: true, data: data.map(fav => fav.personagem)};
 }
 
 export async function addCharacterToFavorites(
@@ -43,11 +50,12 @@ export async function addCharacterToFavorites(
     api_id: number;
     nome: string;
     thumbnail_url: string;
-  },
-  session:Session | null
+  }
 ): Promise<ActionResult> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (error) {
     return { success: false, error: "Não autorizado." };
   }
 
@@ -64,27 +72,30 @@ export async function addCharacterToFavorites(
 
     await prisma.usuarioPersonagemFavorito.create({
       data: {
-        usuario_id: session.user.id,
+        usuario_id: data.user.id,
         personagem_id: personagem.id,
       },
     });
 
-  } catch (error: any) {
-    if (error.code === 'P2002') {
-      return { success: false, error: "Este personagem já foi favoritado." };
+  } catch (error: unknown) {
+    // Erro específico do Prisma para chave única duplicada
+    if (error instanceof Error && 'code' in error && (error as any).code === 'P2002') {
+      return { success: false, error: "Este personagem já está na sua lista de favoritos." };
     }
-    console.error('Erro na Server Action:', error);
-    return { success: false, error: "Ocorreu um erro interno." };
+    
+    console.error('Erro na Server Action (addCharacterToFavorites):', error);
+    return { success: false, error: "Ocorreu um erro interno ao adicionar o personagem." };
   }
 
   revalidatePath('/favorites');
-
   return { success: true };
 }
 
-export async function removeFavorite(personagemId: number, session:Session | null): Promise<ActionResult> {
-  
-  if (!session?.user?.id) {
+export async function removeFavorite(personagemId: number): Promise<ActionResult> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.getUser()
+
+  if (error) {
     return { success: false, error: "Não autorizado." };
   }
 
@@ -92,14 +103,13 @@ export async function removeFavorite(personagemId: number, session:Session | nul
     await prisma.usuarioPersonagemFavorito.delete({
       where: {
         usuario_id_personagem_id: {
-          usuario_id: session.user.id,
+          usuario_id: data.user.id,
           personagem_id: personagemId,
         },
       },
     });
 
     revalidatePath('/favorites'); 
-
     return { success: true };
 
   } catch (error) {

@@ -66,3 +66,32 @@ export async function signup(user : userSignUp) : Promise<signupResult> {
 
   }
 }
+
+export interface userConfirmation{
+  email: string,
+}
+
+export interface sendConfirmationResult{
+  error:boolean, 
+  mensagem:string
+}
+
+export async function sendConfirmation({email}: userConfirmation) : Promise<sendConfirmationResult> {
+    if (email === '') {
+      return {  error: true, mensagem:"Está faltado o email"};
+    }
+
+    const supabase = await createClient();
+    
+    const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+    });
+    
+    if (error) {
+        console.error('Erro ao tentar reenviar o email de recuperação a Supabase:', error.message);
+        return {  error: true, mensagem:"❌ Erro ao reenviar email de confirmação, tente novamente mais tarde!"};
+    }
+
+    return {  error: false, mensagem:"✅ Um novo link de confirmação foi enviado! Verifique seu e-mail"};
+}

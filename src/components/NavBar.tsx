@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 
 
 export default function NavBar(){
+    const supabase = createClient();
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -41,21 +42,15 @@ export default function NavBar(){
         return () => clearTimeout(debounceTimer);
     }, [searchTerm, searchParams, pathname, router]);
 
+    async function getUser(){
+        const { data: { session } } = await supabase.auth.getSession();
+        return session?.user ?? null
+    }
+
     // useEffect para gerenciar autenticação
     useEffect(() => {
-        const supabase = createClient();
-        const justLoggedIn = searchParams.get('justLoggedIn');
 
-        const loadSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setUser(session?.user ?? null);
-        };
-
-        loadSession();
-
-        if (justLoggedIn) {
-            loadSession();
-        }
+        async () => {setUser(await getUser())}
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
             (event, session) => {
@@ -93,8 +88,7 @@ export default function NavBar(){
                 <div className='flex'>
                     {user ? (
                             <>
-                                <p className="m-px font-bold text-white px-4 text-lg
-                                uppercase">
+                                <p className="m-px font-bold text-white px-4 text-lg">
                                     {user.user_metadata.username}
                                 </p>
                                 <Link href='/favorites' className='marvel-button'>

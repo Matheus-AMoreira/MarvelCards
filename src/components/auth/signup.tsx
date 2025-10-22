@@ -8,8 +8,11 @@ export default function SignUp() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState<signupResult>({error: true, messagem: ''});
   const [ incorretPasswords, setIncorretPasswords] = useState(false);
+  const [isSigning, setIsSigning] = useState(false);
 
   async function handleSingUp(formData: FormData){
+    setIsSigning(true)
+
     const user = {
       email: email,
       password: formData.get('password') as string,
@@ -25,6 +28,7 @@ export default function SignUp() {
       alert("Senha não são iguais!");
       setIncorretPasswords(true);
     }
+
     if(user.password == user.passwordConfirmation){
       const result = await signup(user);
       if(result.error){
@@ -38,6 +42,8 @@ export default function SignUp() {
         setEmail('');
       }
     }
+    
+    setIsSigning(false)
   }
 
   return (
@@ -86,7 +92,7 @@ export default function SignUp() {
           </p>
           }
         <button formAction={handleSingUp} className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-          Cadastrar
+          {isSigning ? "Vereficando credenciais..." : "Cadastrar"}
         </button>
       </form>
     </>

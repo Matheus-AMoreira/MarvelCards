@@ -2,15 +2,20 @@
 
 import { login } from '@app/lib/serveractions/authActions';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function Login() {
   const router = useRouter();
+  const [isLoging, setIsLoging] = useState(false);
   
     async function handleLogin(formData: FormData){
+      setIsLoging(true)
+
       const user = {
         email: formData.get('email') as string,
         password: formData.get('password') as string,
       }
+
         const result = await login(user)
         if(result.error){
           alert("Houve um erro ao tentar realizar o login")
@@ -18,6 +23,8 @@ export default function Login() {
         else{
           router.push("/characters")
         }
+        
+      setIsLoging(false)
     }
 
   return (
@@ -41,7 +48,7 @@ export default function Login() {
           className="p-2 border rounded"
         />
         <button formAction={handleLogin} className="p-2 bg-green-500 text-white rounded hover:bg-green-600">
-          Entrar
+          {isLoging ? "Vereficando credenciais..." : "Entrar"}
         </button>
       </form>
     </>

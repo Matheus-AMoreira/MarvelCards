@@ -15,7 +15,7 @@ export default async function MeusFavoritosPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-white">Meus Personagens Favoritos</h1>
+      <h1 className="text-3xl font-bold mb-6">Meus Personagens Favoritos</h1>
       {result.success ? (
           <FavoritesList initialFavorites={result.data} />
         ) : (

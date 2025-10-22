@@ -34,7 +34,7 @@ export default function FavoritesList({ initialFavorites }: { initialFavorites: 
   };
 
   if (favorites.length === 0) {
-    return <p className="text-white text-center">Você ainda não favoritou nenhum personagem.</p>;
+    return <p className="text-center">Você ainda não favoritou nenhum personagem.</p>;
   }
 
   return (

@@ -1,6 +1,24 @@
+"use client"
+
 import { login } from '@app/lib/serveractions/authActions';
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
+  const router = useRouter();
+  
+    async function handleLogin(formData: FormData){
+      const user = {
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
+      }
+        const result = await login(user)
+        if(result.error){
+          alert("Houve um erro ao tentar realizar o login")
+        }
+        else{
+          router.push("/characters")
+        }
+    }
 
   return (
     <>
@@ -22,7 +40,7 @@ export default function Login() {
           required
           className="p-2 border rounded"
         />
-        <button formAction={login} className="p-2 bg-green-500 text-white rounded hover:bg-green-600">
+        <button formAction={handleLogin} className="p-2 bg-green-500 text-white rounded hover:bg-green-600">
           Entrar
         </button>
       </form>

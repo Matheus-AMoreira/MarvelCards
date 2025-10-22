@@ -56,7 +56,7 @@ export default async function CharacterGrid({ searchParams } : { searchParams:an
     <>
       <div className="flex flex-wrap justify-center gap-[2rem] p-[1rem]">
         {charactersData.data.results.map((char) => 
-          <Card key={char.id} char={char}/>)
+          <Card key={char.id} variant="display" char={char} />)
         }
       </div>
       <Pagination 

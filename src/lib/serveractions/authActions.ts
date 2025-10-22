@@ -1,59 +1,97 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
-
 import { createClient } from '@app/utils/supabase/server'
 
-export async function login(formData: FormData) {
-  const supabase = await createClient()
-
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  }
-  const { error } = await supabase.auth.signInWithPassword(data)
-  if (error) {
-    redirect('/auth/error')
-  }
-
-  await new Promise((resolve) => {
-    const interval = setInterval(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        clearInterval(interval)
-        resolve(null)
-      }
-    }, 100)
-  })
-
-  redirect('/')
+interface userLogin{
+  email: string,
+  password: string,
 }
 
-export async function signup(formData: FormData) {
-  const passwordConfirmation = formData.get('passwordConfirmation') as string;
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-    options:{
-      data: {
-        username: formData.get('username') as string,
-      }
+export interface loginResult{
+  error:boolean,
+}
+
+export async function login(user:userLogin) : Promise<loginResult> {
+  const supabase = await createClient()
+
+  const { error } = await supabase.auth.signInWithPassword(user)
+  if (error) {
+    return { error: true};
+  }else {
+    await new Promise((resolve) => {
+      const interval = setInterval(async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          clearInterval(interval)
+          resolve(null)
+        }
+      }, 100)
+    })
+    return { error: false};
+  }
+}
+
+interface userSignUp{
+  email: string,
+  password: string,
+  passwordConfirmation?: string,
+  options:{
+    data: {
+      username: string,
     }
   }
+}
 
-  if(data.password != passwordConfirmation){
-    console.log("Senhas não são iguais");
+export interface signupResult{
+  error:boolean, 
+  messagem:string
+}
+
+export async function signup(user : userSignUp) : Promise<signupResult> {
+
+  if(user.password != user.passwordConfirmation || user.password.length <= 8){
+    return { error:true, messagem:"Os dois campos de senha precisam ser idênticos e possuir mais de 8 caracteres!" }
   }else{
     const supabase = await createClient()
 
-    const { error } = await supabase.auth.signUp(data)
+    delete user.passwordConfirmation;
+
+    const { error } = await supabase.auth.signUp(user)
 
     if (error) {
-      console.log(error)
-      redirect('/auth/error')
+      return { error:true, messagem:`Error code ${error.code}: ${error.message}` }
+    }else{
+      return { error:false ,messagem:"Usuário foi criado com sucesso!\nVerefique o email para confirmação." }
     }
-    
-    redirect('/')
+
   }
+}
+
+export interface userConfirmation{
+  email: string,
+}
+
+export interface sendConfirmationResult{
+  error:boolean, 
+  mensagem:string
+}
+
+export async function sendConfirmation({email}: userConfirmation) : Promise<sendConfirmationResult> {
+    if (email === '') {
+      return {  error: true, mensagem:"Está faltado o email"};
+    }
+
+    const supabase = await createClient();
+    
+    const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+    });
+    
+    if (error) {
+        console.error('Erro ao tentar reenviar o email de recuperação a Supabase:', error.message);
+        return {  error: true, mensagem:"❌ Erro ao reenviar email de confirmação, tente novamente mais tarde!"};
+    }
+
+    return {  error: false, mensagem:"✅ Um novo link de confirmação foi enviado! Verifique seu e-mail"};
 }

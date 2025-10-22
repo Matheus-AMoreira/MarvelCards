@@ -2,30 +2,31 @@
 
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@app/lib/prisma/prisma';
-import { createClient } from '../../utils/supabase/server';
-import { type Personagem } from '@app/components/characters/FavoritesList';
+import { Personagem } from '@prisma/client';
+import { createClient } from '@app/utils/supabase/server';
 
 type ActionResult = {
   success: boolean;
   error?: string;
 };
 
-type FindFavoritesResult = 
-  | { success: true; data: Personagem[] }
-  | { success: false; error: string };
+type FindFavoritesResult = { 
+  error: boolean; 
+  data: Personagem[] | []
+};
 
 export async function findUserFavorites() : Promise<FindFavoritesResult> {
   const supabase = await createClient()
-  const { data, error } = await supabase.auth.getUser()
+  const response = await supabase.auth.getUser()
 
-  if (error) {
-    return { success: false, error: "Não autorizado." };
+  if (!response.data.user) {
+    return { error: true, data:[] };
   }
-
+  
   try {
     const favoritesRelation = await prisma.usuarioPersonagemFavorito.findMany({
     where: {
-      usuario_id: data.user.id,
+      usuario_id: response.data.user.id,
     },
     include: {
       personagem: true,
@@ -34,14 +35,11 @@ export async function findUserFavorites() : Promise<FindFavoritesResult> {
       adicionado_em: 'desc',
     },
   });
-
     const favoriteCharacters = favoritesRelation.map(fav => fav.personagem);
-    
-    return { success: true, data: favoriteCharacters };
+    return { error: false, data: favoriteCharacters };
 
   } catch (error) {
-    console.error("Erro ao buscar favoritos:", error);
-    return { success: false, error: "Ocorreu um erro no servidor ao buscar os personagens favoritos." };
+    return { error: true, data:[] };
   }
 }
 
